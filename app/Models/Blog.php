@@ -1,6 +1,7 @@
 <?php
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\File;
 use Spatie\YamlFrontMatter\YamlFrontMatter;
 class Blog{
@@ -8,39 +9,49 @@ class Blog{
     public $slug;
     public $intro;
     public $body;
-    public function __construct($title,$slug,$intro,$body)
+    public $date;
+    public function __construct($title,$slug,$intro,$body,$date)
     {
         $this->title=$title;
         $this->slug=$slug;
         $this->intro=$intro;
         $this->body=$body;
+        $this->date=$date;
     }
     public static function find($slug){
-        $path=resource_path("blogs/$slug.html");
-        if(!file_exists($path)){
-            return redirect("/");
-        };
-        $blog=cache()->remember("posts.slug", 3, function() use ($path){
-            //var_dump("file get contents");
-            return file_get_contents($path);
-           });
+        $blogs=static::all();
+        return $blogs->firstWhere('slug',$slug);
+        // $path=resource_path("blogs/$slug.html");
+        // if(!file_exists($path)){
+        //     return redirect("/");
+        // };
+        // $blog=cache()->remember("posts.slug", 3, function() use ($path){
+        //     //var_dump("file get contents");
+        //     return file_get_contents($path);
+        //    });
+        // return $blog;
+    }
+    public static function findOrFail($slug){
+        $blogs=static::all();
+        $blog=$blogs->firstWhere('slug',$slug);
+        if(!$blog){
+            throw new ModelNotFoundException();
+        }
         return $blog;
     }
     public static function all(){
-        $blogs=[];
         $files=File::files(resource_path("blogs"));
-        foreach($files as $file){
-
-        $obj=YamlFrontMatter::parsefile($file);
-        $blog=new Blog($obj->title,$obj->slug,$obj->intro,$obj->body());
-        $blogs[]=$blog;
-        // $blogs=array_map(function($file){
-        //     // echo "<pre>";
-        //     // var_dump($file);
-        //     return $file->getContents();
+        return collect($files)
+        ->map(function($file){
+            $obj=YamlFrontMatter::parsefile($file);
+            return new Blog($obj->title,$obj->slug,$obj->intro,$obj->body(),$obj->date);
+        })
+        ->sortByDesc('date');
+        // $files=File::files(resource_path("blogs"));
+        //  return array_map(function($file){
+        //     $obj=YamlFrontMatter::parsefile($file);
+        //     return new Blog($obj->title,$obj->slug,$obj->intro,$obj->body());
         // },$files);
-    }
-        return $blogs;
     }
 
 }

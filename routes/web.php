@@ -12,7 +12,7 @@ use App\Models\Blog;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
+////////// php artisan tinker //////////////
 Route::get('/',function(){
     $blogs=Blog::all();
     return view('blogs',[
@@ -20,7 +20,7 @@ Route::get('/',function(){
     ]);
 });
 Route::get('/blogs/{blog}',function($slug){
-   $blog=Blog::find($slug);
+   $blog=Blog::findOrFail($slug);
    
     return view('blog',[
         'blog'=>$blog
