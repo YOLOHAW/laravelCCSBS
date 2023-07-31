@@ -24,26 +24,31 @@ Route::get('/',function(){
     // $blogs=Blog::with('category','author')->get();
     $blogs=Blog::latest()->get();
     return view('blogs',[
-        'blogs'=>$blogs
+        'blogs'=>$blogs,
+        'categories'=>Category::all()
     ]);
 });
 Route::get('/blogs/{blog:slug}',function(Blog $blog){
    //$blog=Blog::findOrFail($id);
     return view('blog',[
-        'blog'=>$blog
+        'blog'=>$blog,
+        'randomBlogs'=>Blog::inRandomOrder()->take(3)->get()
     ]);
 })->where('blog','[A-z\d\-_]+');
 Route::get('/categories/{category:slug}',function(Category $category){
     //dd($category->blogs);
     return view('blogs',[
         // 'blogs'=>$category->blogs->load('author','category')
-        'blogs'=>$category->blogs
+        'blogs'=>$category->blogs,
+        'categories'=>Category::all(),
+        'currentCategory'=>$category
     ]);
 });
 Route::get('/users/{user:username}',function(User $user){
     //dd($category->blogs);
     return view('blogs',[
         // 'blogs'=>$user->blogs->load('author','category')
-        'blogs'=>$user->blogs
+        'blogs'=>$user->blogs,
+        'categories'=>Category::all()
     ]);
 });
